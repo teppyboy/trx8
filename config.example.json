@@ -1,0 +1,25 @@
+{
+  "metadata": {
+    "name": "Trx8",
+    "version": "0.1.0",
+    "trx8_version": "0.1.0",
+    "description": "This is an example configuration profile.",
+    "author": null
+  },
+  "scripts": [
+    {
+      "name": "An example script",
+      "condition": null,
+      "description": "This script does nothing :)",
+      "actions": [
+        {
+          "name": "echo",
+          "description": "Prints Hello, World! to the console because why not?",
+          "parameters": [
+            "Hello, World!"
+          ]
+        }
+      ]
+    }
+  ]
+}
