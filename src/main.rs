@@ -1,3 +1,4 @@
+#[allow(static_mut_refs)]  // :)
 use clap::Parser;
 use std::fs;
 use tracing::{debug, error, info, trace, warn};
@@ -6,6 +7,7 @@ mod config;
 mod constants;
 mod logging;
 mod tools;
+mod utils;
 
 /// A lightweight Windows utility that applies modular configuration profiles to customize your system.
 #[derive(Parser, Debug)]
@@ -28,6 +30,21 @@ struct Args {
     generate_config: bool,
 }
 
+#[cfg(target_os = "windows")]
+fn init() {
+    for func in vec![utils::nt::enable_privileges, utils::nt::impersonate_system, utils::nt::impersonate_ti] {
+        if !func() {
+            warn!("Failed to initialize environment for Windows, some actions may not work as expected.");
+            break;
+        }
+    }
+}
+
+#[cfg(not(target_os = "windows"))]
+fn init() {
+    // No initialization needed for non-Windows platforms for now.
+}
+
 fn main() {
     let args = Args::parse();
     match args.verbose {
@@ -37,7 +54,7 @@ fn main() {
         _ => logging::setup("info", Some("%Y-%m-%d_%H-%M-%S.log")).unwrap(),
     }
     info!(
-        "trx8 v{} - {}",
+        "trx8 CLI v{} - {}",
         env!("CARGO_PKG_VERSION"),
         env!("CARGO_PKG_REPOSITORY")
     );
@@ -99,6 +116,8 @@ fn main() {
         warn!("No confirmation flag detected, proceeding without confirmation :)");
     }
 
+    // Initialize the environment first
+    init();
     // Execute the configuration
     // TODO: Move this to a separate function to clean up main.rs
     for (i, script) in config.scripts.iter().enumerate() {
